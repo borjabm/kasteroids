@@ -26,16 +26,12 @@ dependencies {
     implementation("javax.ws.rs:javax.ws.rs-api:2.1")
     implementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
     implementation("javax.activation:javax.activation-api:1.2.0")
+
     // Use JUnit test framework
     testImplementation("junit:junit:4.12")
     testImplementation("org.hamcrest:hamcrest-library:1.3")
-
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
 kotlin {
     jvmToolchain(17)
 }
