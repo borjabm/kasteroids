@@ -40,7 +40,7 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
                 )
                 neos.add(neo)
             } catch (e: IOException) {
-                System.err.println("Failed scanning for asteroids: $e")
+                println("Failed scanning for asteroids: $e")
             }
         }
         println("Received " + neos.size + " neos, now sorting")

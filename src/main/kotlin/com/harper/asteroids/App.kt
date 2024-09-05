@@ -77,10 +77,10 @@ class App {
                     )
                 }
             } catch (e: IOException) {
-                System.err.println("Failed scanning for asteroids: $e")
+                println("Failed scanning for asteroids: $e")
             }
         } else {
-            System.err.println(("Failed querying feed, got " + response.getStatus()).toString() + " " + response.getStatusInfo())
+            println(("Failed querying feed, got " + response.getStatus()).toString() + " " + response.getStatusInfo())
         }
     }
 
