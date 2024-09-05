@@ -1,9 +1,14 @@
 plugins {
+    application
     kotlin("jvm") version "1.9.23"
 }
 
 group = "com.bbm"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass.set("com.harper.asteroids.App")
+}
 
 repositories {
     mavenCentral()
