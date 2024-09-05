@@ -1,4 +1,6 @@
 # asteroid-scanner
+This is a Kotlin ported version of the original java found in https://github.com/espen-skjaeran/asteroids.
+
 Tool to check for asteroids approaching earth so that we can send up Bruce Willis to blow it up.
 It uses Nasa's public 'Near Earth Object' API - found on https://api.nasa.gov
 First an initial query is done on the 'Neo - Feed' API to get a list of IDs and names of asteroids near to earth. 
