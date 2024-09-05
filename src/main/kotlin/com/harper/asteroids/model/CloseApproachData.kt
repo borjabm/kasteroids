@@ -1,10 +1,8 @@
-package com.bbm.com.harper.asteroids.model
+package com.harper.asteroids.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.harper.asteroids.model.Distances
-import com.harper.asteroids.model.Velocities
 import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -1,6 +1,6 @@
 package com.harper.asteroids
 
-import com.bbm.com.harper.asteroids.model.CloseApproachData
+import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Distances
 import com.harper.asteroids.model.NearEarthObject
 import java.util.*

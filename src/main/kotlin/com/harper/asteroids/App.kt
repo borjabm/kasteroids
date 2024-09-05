@@ -1,6 +1,6 @@
 package com.harper.asteroids
 
-import com.bbm.com.harper.asteroids.model.CloseApproachData
+import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
 import com.fasterxml.jackson.databind.DeserializationFeature
