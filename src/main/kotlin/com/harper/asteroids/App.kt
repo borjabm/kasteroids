@@ -1,8 +1,8 @@
-package com.bbm.com.harper.asteroids
+package com.harper.asteroids
 
 import com.bbm.com.harper.asteroids.model.CloseApproachData
-import com.bbm.com.harper.asteroids.model.Feed
-import com.bbm.com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.model.Feed
+import com.harper.asteroids.model.NearEarthObject
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.glassfish.jersey.client.ClientConfig

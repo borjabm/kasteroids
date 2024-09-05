@@ -1,4 +1,6 @@
-package com.bbm.com.harper.asteroids.model
+package com.harper.asteroids.model
+
+import com.harper.asteroids.model.DiameterEstimation
 
 class EstimatedDiameter {
     val kilometers: DiameterEstimation? = null

@@ -1,10 +1,9 @@
-package com.bbm.com.harper.asteroids.model
+package com.harper.asteroids.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.function.Function
 import java.util.stream.Collectors
-import java.util.stream.Stream
 
 /**
  * Response for a feed query of Neos.

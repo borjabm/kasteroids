@@ -1,6 +1,6 @@
-package com.bbm.com.harper.asteroids
+package com.harper.asteroids
 
-import com.bbm.com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.model.NearEarthObject
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
 import java.util.function.Predicate

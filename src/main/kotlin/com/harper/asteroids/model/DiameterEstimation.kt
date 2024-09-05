@@ -1,4 +1,4 @@
-package com.bbm.com.harper.asteroids.model
+package com.harper.asteroids.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

@@ -1,8 +1,8 @@
-package com.bbm.com.harper.asteroids
+package com.harper.asteroids
 
 import com.bbm.com.harper.asteroids.model.CloseApproachData
-import com.bbm.com.harper.asteroids.model.Distances
-import com.bbm.com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.model.Distances
+import com.harper.asteroids.model.NearEarthObject
 import java.util.*
 
 class VicinityComparator : Comparator<NearEarthObject> {
