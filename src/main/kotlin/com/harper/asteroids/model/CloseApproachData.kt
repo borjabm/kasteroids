@@ -12,7 +12,7 @@ class CloseApproachData {
     val closeApproachDate: Date? = null
 
     @JsonProperty("close_approach_date_full")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd hh:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd hh:mm", locale = "US")
     val closeApproachDateTime: Date? = null
 
     @JsonProperty("epoch_date_close_approach")

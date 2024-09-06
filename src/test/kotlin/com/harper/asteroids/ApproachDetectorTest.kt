@@ -15,8 +15,8 @@ class ApproachDetectorTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        neo1 = mapper.readValue(object {}::class.java.classLoader.getResource("neo_example.json"), NearEarthObject::class.java)
-        neo2 = mapper.readValue(object {}::class.java.classLoader.getResource("neo_example2.json"), NearEarthObject::class.java)
+        neo1 = mapper.readValue(javaClass.getResource("/neo_example.json"), NearEarthObject::class.java)
+        neo2 = mapper.readValue(javaClass.getResource("/neo_example2.json"), NearEarthObject::class.java)
     }
 
     @Test
