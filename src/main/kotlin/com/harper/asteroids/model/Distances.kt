@@ -1,21 +1,23 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-class Distances : Comparable<Distances?> {
-    @JsonProperty("astronomical")
-    val astronomical: Double? = null
 
-    @JsonProperty("lunar")
-    val lunar: Double? = null
+@Serializable
+class Distances(
+    @SerialName("astronomical")
+    val astronomical: Double? = null,
 
-    @JsonProperty("kilometers")
-    val kilometers: Double? = null
+    @SerialName("lunar")
+    val lunar: Double? = null,
 
-    @JsonProperty("miles")
+    @SerialName("kilometers")
+    val kilometers: Double? = null,
+
+    @SerialName("miles")
     val miles: Double? = null
-
-
+) : Comparable<Distances?> {
     override fun compareTo(other: Distances?): Int {
         return kilometers!!.compareTo(other!!.kilometers!!)
     }

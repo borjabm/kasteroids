@@ -1,18 +1,20 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import com.harper.asteroids.utils.NasaObjectMapper
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import java.io.IOException
-import java.time.LocalDate
 import java.util.function.Predicate
 import java.util.stream.Collectors
 
@@ -26,14 +28,16 @@ class ApproachDetector(
     private val today: LocalDate,
     private val nearEarthObjectIds: MutableList<Any>?
 ) {
-
     private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+            })
+        }
         install(HttpTimeout) {
             requestTimeoutMillis = 10000
         }
     }
-
-    private val mapper = NasaObjectMapper()
 
     /**
      * Get the n closest approaches in this period
@@ -50,12 +54,10 @@ class ApproachDetector(
                             accept(ContentType.Application.Json)
                         }
 
-                        val neo: NearEarthObject = mapper.readValue(
-                            response.bodyAsText(),
-                            NearEarthObject::class.java
-                        )
+                        val neo: NearEarthObject = response.body()
 
                         println("Check passing of object $id - done")
+
                         neo
                     } catch (e: IOException) {
                         println("Failed scanning for asteroids: $e")

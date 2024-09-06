@@ -1,19 +1,21 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.util.function.Function
 import java.util.stream.Collectors
 
 /**
  * Response for a feed query of Neos.
  */
-class Feed() {
-    @JsonProperty("element_count")
-    val elementCount: Int = 0
+@Serializable
+class Feed(
+    @SerialName("element_count")
+    val elementCount: Int = 0,
 
-    @JsonProperty("near_earth_objects")
-    private val nearEarthObjects: Map<String, List<NearEarthObjectIds?>>? = null
-
+    @SerialName("near_earth_objects")
+    private val nearEarthObjects: Map<String, List<NearEarthObjectIds?>>? = null,
+) {
     fun getNearEarthObjects(): Map<String, List<NearEarthObjectIds?>>? {
         return nearEarthObjects
     }

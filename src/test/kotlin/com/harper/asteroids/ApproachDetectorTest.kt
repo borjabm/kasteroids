@@ -1,23 +1,22 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import com.harper.asteroids.utils.NasaObjectMapper
+import kotlinx.datetime.LocalDate
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
-import java.time.LocalDate
 
 class ApproachDetectorTest {
-    private val mapper = NasaObjectMapper()
+
     private var neo1: NearEarthObject? = null
     private var neo2: NearEarthObject? = null
 
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        neo1 = mapper.readValue(javaClass.getResource("/neo_example.json"), NearEarthObject::class.java)
-        neo2 = mapper.readValue(javaClass.getResource("/neo_example2.json"), NearEarthObject::class.java)
+        neo1 = decodeFromResourceFile("neo_example.json")
+        neo2 = decodeFromResourceFile("neo_example2.json")
     }
 
     @Test

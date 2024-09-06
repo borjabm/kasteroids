@@ -1,19 +1,20 @@
 package com.harper.asteroids
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
-import com.harper.asteroids.utils.NasaObjectMapper
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import java.io.IOException
-import java.time.LocalDate
 import java.util.*
 
 /**
@@ -28,12 +29,15 @@ import java.util.*
  */
 class App {
     private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+            })
+        }
         install(HttpTimeout) {
             requestTimeoutMillis = 10000
         }
     }
-
-    private val mapper: ObjectMapper = NasaObjectMapper()
 
     /**
      * Scan space for asteroids close to earth
@@ -49,10 +53,8 @@ class App {
 
         println("Got response: $response")
         if (response.status == HttpStatusCode.OK) {
-            val content: String = response.bodyAsText()
-
             try {
-                val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
+                val neoFeed: Feed = response.body()
                 val approachDetector: ApproachDetector = ApproachDetector(today, neoFeed.allObjectIds)
 
                 val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)

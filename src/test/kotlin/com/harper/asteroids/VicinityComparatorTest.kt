@@ -1,31 +1,29 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import com.harper.asteroids.utils.NasaObjectMapper
+import kotlinx.datetime.LocalDate
 import org.hamcrest.Matchers
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
-import java.time.LocalDate
+import java.time.Month
 
 class VicinityComparatorTest {
 
-    private val mapper = NasaObjectMapper()
     private var neo1: NearEarthObject? = null
     private var neo2:NearEarthObject? = null
 
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        neo1 = mapper.readValue(javaClass.getResource("/neo_example.json"), NearEarthObject::class.java)
-        neo2 =
-            mapper.readValue<NearEarthObject>(javaClass.getResource("/neo_example2.json"), NearEarthObject::class.java)
+        neo1 = decodeFromResourceFile("neo_example.json")
+        neo2 = decodeFromResourceFile("neo_example2.json")
     }
 
     @Test
     fun testOrder() {
-        val today = LocalDate.of(2020, 1, 1)
+        val today = LocalDate(year = 2020, month = Month.of(1), dayOfMonth = 1)
         val comparator = VicinityComparator(today)
 
         Assert.assertThat<Int>(comparator.compare(neo1!!, neo2!!), Matchers.lessThan<Int>(0))
