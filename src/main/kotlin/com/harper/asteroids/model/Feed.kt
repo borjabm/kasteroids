@@ -1,6 +1,5 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -8,7 +7,6 @@ import java.util.stream.Collectors
 /**
  * Response for a feed query of Neos.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 class Feed() {
     @JsonProperty("element_count")
     val elementCount: Int = 0

@@ -49,7 +49,6 @@ class App {
             .get()
         println("Got response: $response")
         if (response.getStatus() === Response.Status.OK.getStatusCode()) {
-            val mapper: ObjectMapper = ObjectMapper()
             val content: String = response.readEntity(String::class.java)
 
 
