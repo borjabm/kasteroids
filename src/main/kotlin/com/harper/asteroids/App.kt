@@ -5,15 +5,16 @@ import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
 import com.harper.asteroids.utils.NasaObjectMapper
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import org.glassfish.jersey.client.ClientConfig
 import java.io.IOException
 import java.time.LocalDate
 import java.util.*
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 
 /**
  * Main app. Gets the list of closest asteroids from NASA at
@@ -26,31 +27,29 @@ import javax.ws.rs.core.Response
  * Set environment variable 'API_KEY' to override.
  */
 class App {
-    private val client: Client
+    private val client = HttpClient(CIO) {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 10000
+        }
+    }
 
     private val mapper: ObjectMapper = NasaObjectMapper()
-
-    init {
-        val configuration: ClientConfig = ClientConfig()
-        client = ClientBuilder.newClient(configuration)
-    }
 
     /**
      * Scan space for asteroids close to earth
      */
     private suspend fun checkForAsteroids() {
         val today = LocalDate.now()
-        val response: Response = client
-            .target(NEO_FEED_URL)
-            .queryParam("start_date", today.toString())
-            .queryParam("end_date", today.toString())
-            .queryParam("api_key", API_KEY)
-            .request(MediaType.APPLICATION_JSON)
-            .get()
-        println("Got response: $response")
-        if (response.getStatus() === Response.Status.OK.getStatusCode()) {
-            val content: String = response.readEntity(String::class.java)
+        val response = client.get(NEO_FEED_URL) {
+            parameter("api_key", App.API_KEY)
+            parameter("start_date", today.toString())
+            parameter("end_date", today.toString())
+            accept(ContentType.Application.Json)
+        }
 
+        println("Got response: $response")
+        if (response.status == HttpStatusCode.OK) {
+            val content: String = response.bodyAsText()
 
             try {
                 val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
@@ -79,7 +78,7 @@ class App {
                 println("Failed scanning for asteroids: $e")
             }
         } else {
-            println(("Failed querying feed, got " + response.getStatus()).toString() + " " + response.getStatusInfo())
+            println("Failed querying feed, got " + response.status + " " + response.status.description)
         }
     }
 
