@@ -3,6 +3,7 @@ package com.harper.asteroids
 import com.harper.asteroids.model.NearEarthObject
 import com.harper.asteroids.utils.NasaObjectMapper
 import java.io.IOException
+import java.time.LocalDate
 import java.util.function.Predicate
 import java.util.stream.Collectors
 import javax.ws.rs.client.Client
@@ -15,7 +16,10 @@ import javax.ws.rs.core.MediaType
  * https://api.nasa.gov/neo/rest/v1/neo/
  * Alerts if someone is possibly hazardous.
  */
-class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
+class ApproachDetector(
+    private val today: LocalDate,
+    private val nearEarthObjectIds: MutableList<Any>?
+) {
     private val client: Client = ClientBuilder.newClient()
     private val mapper = NasaObjectMapper()
 
@@ -45,7 +49,7 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
         }
         println("Received " + neos.size + " neos, now sorting")
 
-        return getClosest(neos, limit)
+        return getClosest(today, neos, limit)
     }
 
     companion object {
@@ -57,13 +61,12 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
          * @param limit
          * @return
          */
-        fun getClosest(neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject>? {
-            //TODO: Should ignore the passes that are not today/this week.
+        fun getClosest(today: LocalDate, neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject>? {
             return neos.stream()
                 .filter(Predicate<NearEarthObject> { neo: NearEarthObject ->
                     neo.closeApproachData != null && !neo.closeApproachData.isEmpty()
                 })
-                .sorted(VicinityComparator())
+                .sorted(VicinityComparator(today))
                 .limit(limit.toLong())
                 .collect(Collectors.toList<NearEarthObject>())
         }

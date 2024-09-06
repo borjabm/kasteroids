@@ -6,6 +6,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
+import java.time.LocalDate
 
 class ApproachDetectorTest {
     private val mapper = NasaObjectMapper()
@@ -21,8 +22,9 @@ class ApproachDetectorTest {
 
     @Test
     fun testFiltering() {
+        val today = LocalDate.now()
         val neos: MutableList<NearEarthObject>  = java.util.List.of(neo1, neo2)
-        val filtered: MutableList<NearEarthObject>? = ApproachDetector.getClosest(neos, 1)
+        val filtered: MutableList<NearEarthObject>? = ApproachDetector.getClosest(today, neos, 1)
         //Neo2 has the closest passing at 5261628 kms away.
         // TODO: Neo2's closest passing is in 2028.
         // In Jan 202, neo1 is closer (5390966 km, vs neo2's at 7644137 km)

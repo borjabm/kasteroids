@@ -7,6 +7,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
+import java.time.LocalDate
 
 class VicinityComparatorTest {
 
@@ -24,10 +25,11 @@ class VicinityComparatorTest {
 
     @Test
     fun testOrder() {
-        val comparator = VicinityComparator()
+        val today = LocalDate.of(2020, 1, 1)
+        val comparator = VicinityComparator(today)
 
-        Assert.assertThat<Int>(comparator.compare(neo1!!, neo2!!), Matchers.greaterThan<Int>(0))
-        Assert.assertThat<Int>(comparator.compare(neo2!!, neo1!!), Matchers.lessThan<Int>(0))
+        Assert.assertThat<Int>(comparator.compare(neo1!!, neo2!!), Matchers.lessThan<Int>(0))
+        Assert.assertThat<Int>(comparator.compare(neo2!!, neo1!!), Matchers.greaterThan<Int>(0))
         Assert.assertEquals(comparator.compare(neo1!!, neo1!!).toLong(), 0)
     }
 }

@@ -53,7 +53,7 @@ class App {
 
             try {
                 val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
-                val approachDetector: ApproachDetector = ApproachDetector(neoFeed.allObjectIds)
+                val approachDetector: ApproachDetector = ApproachDetector(today, neoFeed.allObjectIds)
 
                 val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
                 println("Hazard?   Distance(km)    When                             Name")
