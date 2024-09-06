@@ -5,6 +5,7 @@ import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
 import com.harper.asteroids.utils.NasaObjectMapper
+import kotlinx.coroutines.runBlocking
 import org.glassfish.jersey.client.ClientConfig
 import java.io.IOException
 import java.time.LocalDate
@@ -37,7 +38,7 @@ class App {
     /**
      * Scan space for asteroids close to earth
      */
-    private fun checkForAsteroids() {
+    private suspend fun checkForAsteroids() {
         val today = LocalDate.now()
         val response: Response = client
             .target(NEO_FEED_URL)
@@ -89,7 +90,7 @@ class App {
         var API_KEY: String = "DEMO_KEY"
 
         @JvmStatic
-        fun main(args: Array<String>) {
+        fun main(args: Array<String>) = runBlocking {
             val apiKey = System.getenv("API_KEY")
             if (apiKey != null && !apiKey.isBlank()) {
                 API_KEY = apiKey

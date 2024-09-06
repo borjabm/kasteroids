@@ -2,13 +2,19 @@ package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
 import com.harper.asteroids.utils.NasaObjectMapper
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.io.IOException
 import java.time.LocalDate
 import java.util.function.Predicate
 import java.util.stream.Collectors
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.MediaType
 
 /**
  * Receives a set of neo ids and rates them after earth proximity.
@@ -20,33 +26,45 @@ class ApproachDetector(
     private val today: LocalDate,
     private val nearEarthObjectIds: MutableList<Any>?
 ) {
-    private val client: Client = ClientBuilder.newClient()
+
+    private val client = HttpClient(CIO) {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 10000
+        }
+    }
+
     private val mapper = NasaObjectMapper()
 
     /**
      * Get the n closest approaches in this period
      * @param limit - n
      */
-    fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
-        val neos: MutableList<NearEarthObject> = ArrayList<NearEarthObject>(limit)
-        for (id in nearEarthObjectIds!!) {
-            try {
-                println("Check passing of object $id")
-                val response = client
-                    .target(NEO_URL + id)
-                    .queryParam("api_key", App.API_KEY)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get()
+    suspend fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
+        val neos = coroutineScope {
+            nearEarthObjectIds!!.map { id ->
+                async {
+                    try {
+                        println("Check passing of object $id")
+                        val response = client.get(NEO_URL + id) {
+                            parameter("api_key", App.API_KEY)
+                            accept(ContentType.Application.Json)
+                        }
 
-                val neo: NearEarthObject = mapper.readValue(
-                    response.readEntity(String::class.java),
-                    NearEarthObject::class.java
-                )
-                neos.add(neo)
-            } catch (e: IOException) {
-                println("Failed scanning for asteroids: $e")
-            }
+                        val neo: NearEarthObject = mapper.readValue(
+                            response.bodyAsText(),
+                            NearEarthObject::class.java
+                        )
+
+                        println("Check passing of object $id - done")
+                        neo
+                    } catch (e: IOException) {
+                        println("Failed scanning for asteroids: $e")
+                        throw e
+                    }
+                }
+            }.awaitAll()
         }
+
         println("Received " + neos.size + " neos, now sorting")
 
         return getClosest(today, neos, limit)

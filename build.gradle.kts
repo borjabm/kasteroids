@@ -26,6 +26,9 @@ dependencies {
     implementation("javax.ws.rs:javax.ws.rs-api:2.1")
     implementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
     implementation("javax.activation:javax.activation-api:1.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-client-cio:2.3.12")
 
     // Use JUnit test framework
     testImplementation("junit:junit:4.12")
