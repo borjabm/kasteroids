@@ -1,7 +1,7 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.harper.asteroids.utils.NasaObjectMapper
 import java.io.IOException
 import java.util.function.Predicate
 import java.util.stream.Collectors
@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType
  */
 class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
     private val client: Client = ClientBuilder.newClient()
-    private val mapper = ObjectMapper()
+    private val mapper = NasaObjectMapper()
 
     /**
      * Get the n closest approaches in this period

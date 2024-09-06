@@ -1,10 +1,10 @@
 package com.harper.asteroids
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.harper.asteroids.utils.NasaObjectMapper
 import org.glassfish.jersey.client.ClientConfig
 import java.io.IOException
 import java.time.LocalDate
@@ -27,12 +27,11 @@ import javax.ws.rs.core.Response
 class App {
     private val client: Client
 
-    private val mapper: ObjectMapper = ObjectMapper()
+    private val mapper: ObjectMapper = NasaObjectMapper()
 
     init {
         val configuration: ClientConfig = ClientConfig()
         client = ClientBuilder.newClient(configuration)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     /**

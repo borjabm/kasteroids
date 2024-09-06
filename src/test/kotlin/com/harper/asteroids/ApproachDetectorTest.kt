@@ -1,15 +1,14 @@
 package com.harper.asteroids
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.utils.NasaObjectMapper
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
 
 class ApproachDetectorTest {
-    private val mapper = ObjectMapper().apply { configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) }
+    private val mapper = NasaObjectMapper()
     private var neo1: NearEarthObject? = null
     private var neo2: NearEarthObject? = null
 
