@@ -17,8 +17,8 @@ class Distances(
 
     @SerialName("miles")
     val miles: Double? = null
-) : Comparable<Distances?> {
-    override fun compareTo(other: Distances?): Int {
-        return kilometers!!.compareTo(other!!.kilometers!!)
+) : Comparable<Distances> {
+    override fun compareTo(other: Distances): Int {
+        return kilometers!!.compareTo(other.kilometers!!) //TODO: Think what to do if kilometers is missing (instead of NPE)
     }
 }

@@ -24,7 +24,7 @@ class NearEarthObject(
     val isPotentiallyHazardous: Boolean = false,
 
     @SerialName("close_approach_data")
-    val closeApproachData: List<CloseApproachData>? = null,
+    val closeApproachData: List<CloseApproachData> = listOf(),
 
     @SerialName("is_sentry_object")
     val isSentryObject: Boolean = false

@@ -8,8 +8,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.LocalDate
 import java.io.IOException
-import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * Receives a set of neo ids and rates them after earth proximity.
@@ -20,23 +18,23 @@ import java.util.stream.Collectors
 class ApproachDetector(
     private val client: NasaClient,
     private val today: LocalDate,
-    private val nearEarthObjectIds: MutableList<Any>?
+    private val nearEarthObjectIds: List<String>
 ) {
     /**
      * Get the n closest approaches in this period
      * @param limit - n
      */
-    suspend fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
+    suspend fun getClosestApproaches(limit: Int): List<NearEarthObject> {
         val neos = coroutineScope {
-            nearEarthObjectIds!!.map { id ->
+            nearEarthObjectIds.map { id ->
                 async {
                     try {
                         println("Check passing of object $id")
-                        val response = client.getNeo(id.toString())
 
+                        val response = client.getNeo(id)
                         val neo: NearEarthObject = response.body()
 
-                        println("Check passing of object $id - done")
+                        println("Check passing of object $id - fetched")
 
                         neo
                     } catch (e: IOException) {
@@ -52,23 +50,14 @@ class ApproachDetector(
         return getClosest(today, neos, limit)
     }
 
-    companion object {
-        private const val NEO_URL = "https://api.nasa.gov/neo/rest/v1/neo/"
-
-        /**
-         * Get the closest passing.
-         * @param neos the NearEarthObjects
-         * @param limit
-         * @return
-         */
-        fun getClosest(today: LocalDate, neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject>? {
-            return neos.stream()
-                .filter(Predicate<NearEarthObject> { neo: NearEarthObject ->
-                    neo.closeApproachData != null && !neo.closeApproachData.isEmpty()
-                })
-                .sorted(VicinityComparator(today))
-                .limit(limit.toLong())
-                .collect(Collectors.toList<NearEarthObject>())
-        }
-    }
+    /**
+     * Get the closest passing.
+     * @param neos the NearEarthObjects
+     * @param limit
+     * @return
+     */
+    fun getClosest(today: LocalDate, neos: List<NearEarthObject>, limit: Int): List<NearEarthObject> =
+        neos.filter { it.closeApproachData.isNotEmpty() }
+            .sortedWith(VicinityComparator(today))
+            .take(limit)
 }
