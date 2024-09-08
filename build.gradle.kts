@@ -1,6 +1,7 @@
 plugins {
     application
     kotlin("jvm") version "1.9.23"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.20"
 }
 
 group = "com.bbm"
@@ -16,16 +17,13 @@ repositories {
 
 dependencies {
     // This dependency is used by the application.
-    implementation("com.google.guava:guava:28.0-jre")
-
-    implementation("org.glassfish.jersey.core:jersey-common:2.27")
-    implementation("org.glassfish.jersey.core:jersey-client:2.27")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.9.5")
-    implementation("org.glassfish.jersey.media:jersey-media-json-jackson:2.27")
-    implementation("org.glassfish.jersey.media:jersey-media-json-jackson:2.27")
-    implementation("javax.ws.rs:javax.ws.rs-api:2.1")
-    implementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
-    implementation("javax.activation:javax.activation-api:1.2.0")
+    implementation("io.ktor:ktor-client-core-jvm:2.3.12")
+    implementation("io.ktor:ktor-client-cio-jvm:2.3.12")
+    implementation("io.ktor:ktor-client-content-negotiation-jvm:2.3.12")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:2.3.12")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1")
 
     // Use JUnit test framework
     testImplementation("junit:junit:4.12")

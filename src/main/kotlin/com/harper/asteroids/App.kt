@@ -1,18 +1,13 @@
 package com.harper.asteroids
 
-import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
-import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.glassfish.jersey.client.ClientConfig
+import com.harper.asteroids.utils.NasaClient
+import io.ktor.client.call.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDate
 import java.io.IOException
-import java.time.LocalDate
-import java.util.*
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 
 /**
  * Main app. Gets the list of closest asteroids from NASA at
@@ -24,79 +19,43 @@ import javax.ws.rs.core.Response
  * Risk of getting throttled if we don't sign up for own key on https://api.nasa.gov/
  * Set environment variable 'API_KEY' to override.
  */
-class App {
-    private val client: Client
-
-    private val mapper: ObjectMapper = ObjectMapper()
-
-    init {
-        val configuration: ClientConfig = ClientConfig()
-        client = ClientBuilder.newClient(configuration)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+fun main() = runBlocking {
+    NasaClient().use {
+        checkForAsteroids(it)
     }
+}
 
-    /**
-     * Scan space for asteroids close to earth
-     */
-    private fun checkForAsteroids() {
-        val today = LocalDate.now()
-        val response: Response = client
-            .target(NEO_FEED_URL)
-            .queryParam("start_date", today.toString())
-            .queryParam("end_date", today.toString())
-            .queryParam("api_key", API_KEY)
-            .request(MediaType.APPLICATION_JSON)
-            .get()
-        println("Got response: $response")
-        if (response.getStatus() === Response.Status.OK.getStatusCode()) {
-            val mapper: ObjectMapper = ObjectMapper()
-            val content: String = response.readEntity(String::class.java)
+private suspend fun checkForAsteroids(client: NasaClient) {
+    val limit = 10
+    val today = LocalDate.now()
+    val response: HttpResponse = client.getFeed(today, today);
 
+    println("Got response: $response")
 
-            try {
-                val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
-                val approachDetector: ApproachDetector = ApproachDetector(neoFeed.allObjectIds)
+    if (response.status == HttpStatusCode.OK) {
+        try {
+            val neoFeed: Feed = response.body()
+            val approachDetector = ApproachDetector(client, today, neoFeed.allObjectIds)
 
-                val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
-                println("Hazard?   Distance(km)    When                             Name")
-                println("----------------------------------------------------------------------")
-                for (neo in closest!!) {
-                    val closestPass: Optional<CloseApproachData> = neo.closeApproachData!!.stream()
-                        .min(Comparator.comparing(CloseApproachData::missDistance))
+            val closest = approachDetector.getClosestApproaches(limit)
+            println("Hazard?   Distance(km)    When                             Name")
+            println("----------------------------------------------------------------------")
+            for (neo in closest) {
+                val closestPass = neo.closeApproachData.minByOrNull { it.missDistance!! } //TODO: Think what if no missDistance (instead of NPE)
 
-                    if (closestPass.isEmpty()) continue
+                if (closestPass == null) continue
 
-                    println(
-                        java.lang.String.format(
-                            "%s       %12.3f  %s    %s",
-                            (if (neo.isPotentiallyHazardous) "!!!" else " - "),
-                            closestPass.get().missDistance!!.kilometers,
-                            closestPass.get().closeApproachDateTime,
-                            neo.name
-                        )
-                    )
-                }
-            } catch (e: IOException) {
-                println("Failed scanning for asteroids: $e")
+                val hazardMarker = if (neo.isPotentiallyHazardous) "!!!" else " - "
+                val kilometers = String.format("%12.3f", closestPass.missDistance!!.kilometers)
+                val dateTime = closestPass.closeApproachDateTime
+                val name = neo.name
+
+                println("$hazardMarker       $kilometers  $dateTime    $name")
             }
-        } else {
-            println(("Failed querying feed, got " + response.getStatus()).toString() + " " + response.getStatusInfo())
+        } catch (e: IOException) {
+            println("Failed scanning for asteroids: $e")
         }
-    }
-
-
-    companion object {
-        private const val NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed"
-
-        var API_KEY: String = "DEMO_KEY"
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val apiKey = System.getenv("API_KEY")
-            if (apiKey != null && !apiKey.isBlank()) {
-                API_KEY = apiKey
-            }
-            App().checkForAsteroids()
-        }
+    } else {
+        println("Failed querying feed, got " + response.status + " " + response.status.description)
     }
 }

@@ -1,29 +1,32 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.*
+import com.harper.asteroids.utils.NasaDateSerializer
+import com.harper.asteroids.utils.NasaDateTimeSerializer
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-class CloseApproachData {
-    @JsonProperty("close_approach_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val closeApproachDate: Date? = null
 
-    @JsonProperty("close_approach_date_full")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd hh:mm")
-    val closeApproachDateTime: Date? = null
+@Serializable
+data class CloseApproachData(
+    @SerialName("close_approach_date")
+    @Serializable(with = NasaDateSerializer::class)
+    val closeApproachDate: LocalDate? = null,
 
-    @JsonProperty("epoch_date_close_approach")
-    val closeApproachEpochDate: Long = 0
+    @SerialName("close_approach_date_full")
+    @Serializable(with = NasaDateTimeSerializer::class)
+    val closeApproachDateTime: LocalDateTime? = null,
 
-    @JsonProperty("relative_velocity")
-    val relativeVelocity: Velocities? = null
+    @SerialName("epoch_date_close_approach")
+    val closeApproachEpochDate: Long = 0,
 
-    @JsonProperty("miss_distance")
-    val missDistance: Distances? = null
+    @SerialName("relative_velocity")
+    val relativeVelocity: Velocities? = null,
 
-    @JsonProperty("orbiting_body")
+    @SerialName("miss_distance")
+    val missDistance: Distances? = null,
+
+    @SerialName("orbiting_body")
     val orbitingBody: String? = null
-}
+)
