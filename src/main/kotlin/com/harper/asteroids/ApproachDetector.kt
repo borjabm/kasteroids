@@ -1,19 +1,12 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import io.ktor.client.*
+import com.harper.asteroids.utils.NasaClient
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.util.function.Predicate
 import java.util.stream.Collectors
@@ -25,20 +18,10 @@ import java.util.stream.Collectors
  * Alerts if someone is possibly hazardous.
  */
 class ApproachDetector(
+    private val client: NasaClient,
     private val today: LocalDate,
     private val nearEarthObjectIds: MutableList<Any>?
 ) {
-    private val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
-        }
-        install(HttpTimeout) {
-            requestTimeoutMillis = 10000
-        }
-    }
-
     /**
      * Get the n closest approaches in this period
      * @param limit - n
@@ -49,10 +32,7 @@ class ApproachDetector(
                 async {
                     try {
                         println("Check passing of object $id")
-                        val response = client.get(NEO_URL + id) {
-                            parameter("api_key", App.API_KEY)
-                            accept(ContentType.Application.Json)
-                        }
+                        val response = client.getNeo(id.toString())
 
                         val neo: NearEarthObject = response.body()
 

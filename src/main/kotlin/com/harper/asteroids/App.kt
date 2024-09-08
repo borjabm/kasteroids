@@ -3,17 +3,12 @@ package com.harper.asteroids
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
-import io.ktor.client.*
+import com.harper.asteroids.utils.NasaClient
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.util.*
 
@@ -28,34 +23,18 @@ import java.util.*
  * Set environment variable 'API_KEY' to override.
  */
 class App {
-    private val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
-        }
-        install(HttpTimeout) {
-            requestTimeoutMillis = 10000
-        }
-    }
-
     /**
      * Scan space for asteroids close to earth
      */
-    private suspend fun checkForAsteroids() {
+    private suspend fun checkForAsteroids(client: NasaClient) {
         val today = LocalDate.now()
-        val response = client.get(NEO_FEED_URL) {
-            parameter("api_key", App.API_KEY)
-            parameter("start_date", today.toString())
-            parameter("end_date", today.toString())
-            accept(ContentType.Application.Json)
-        }
+        val response: HttpResponse = client.getFeed(today, today);
 
         println("Got response: $response")
         if (response.status == HttpStatusCode.OK) {
             try {
                 val neoFeed: Feed = response.body()
-                val approachDetector: ApproachDetector = ApproachDetector(today, neoFeed.allObjectIds)
+                val approachDetector: ApproachDetector = ApproachDetector(client, today, neoFeed.allObjectIds)
 
                 val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
                 println("Hazard?   Distance(km)    When                             Name")
@@ -86,17 +65,11 @@ class App {
 
 
     companion object {
-        private const val NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed"
-
-        var API_KEY: String = "DEMO_KEY"
-
         @JvmStatic
         fun main(args: Array<String>) = runBlocking {
-            val apiKey = System.getenv("API_KEY")
-            if (apiKey != null && !apiKey.isBlank()) {
-                API_KEY = apiKey
+            NasaClient().use {
+                App().checkForAsteroids(it)
             }
-            App().checkForAsteroids()
         }
     }
 }
