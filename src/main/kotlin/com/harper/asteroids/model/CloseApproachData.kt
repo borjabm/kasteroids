@@ -1,11 +1,9 @@
 package com.harper.asteroids.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.*
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class CloseApproachData {
     @JsonProperty("close_approach_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

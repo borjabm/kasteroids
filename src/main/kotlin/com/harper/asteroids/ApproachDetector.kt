@@ -1,7 +1,6 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
 import java.util.function.Predicate
 import java.util.stream.Collectors
@@ -17,7 +16,6 @@ import javax.ws.rs.core.MediaType
  */
 class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
     private val client: Client = ClientBuilder.newClient()
-    private val mapper = ObjectMapper()
 
     /**
      * Get the n closest approaches in this period
@@ -34,7 +32,7 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
                     .request(MediaType.APPLICATION_JSON)
                     .get()
 
-                val neo: NearEarthObject = mapper.readValue(
+                val neo: NearEarthObject = JacksonMapper.instance.readValue(
                     response.readEntity(String::class.java),
                     NearEarthObject::class.java
                 )

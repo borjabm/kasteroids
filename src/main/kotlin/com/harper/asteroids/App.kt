@@ -3,8 +3,6 @@ package com.harper.asteroids
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.glassfish.jersey.client.ClientConfig
 import java.io.IOException
 import java.time.LocalDate
@@ -27,12 +25,9 @@ import javax.ws.rs.core.Response
 class App {
     private val client: Client
 
-    private val mapper: ObjectMapper = ObjectMapper()
-
     init {
         val configuration: ClientConfig = ClientConfig()
         client = ClientBuilder.newClient(configuration)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     /**
@@ -49,12 +44,10 @@ class App {
             .get()
         println("Got response: $response")
         if (response.getStatus() === Response.Status.OK.getStatusCode()) {
-            val mapper: ObjectMapper = ObjectMapper()
             val content: String = response.readEntity(String::class.java)
 
-
             try {
-                val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
+                val neoFeed: Feed = JacksonMapper.instance.readValue(content, Feed::class.java)
                 val approachDetector: ApproachDetector = ApproachDetector(neoFeed.allObjectIds)
 
                 val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
