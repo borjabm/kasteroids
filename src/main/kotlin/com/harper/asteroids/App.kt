@@ -50,9 +50,10 @@ class App {
                 val neoFeed: Feed = JacksonMapper.instance.readValue(content, Feed::class.java)
                 val approachDetector: ApproachDetector = ApproachDetector(neoFeed.allObjectIds)
 
-                val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
+                val closest: List<NearEarthObject>? = approachDetector.getClosestApproaches(10)
                 println("Hazard?   Distance(km)    When                             Name")
                 println("----------------------------------------------------------------------")
+
                 for (neo in closest!!) {
                     val closestPass: Optional<CloseApproachData> = neo.closeApproachData!!.stream()
                         .min(Comparator.comparing(CloseApproachData::missDistance))

@@ -1,23 +1,33 @@
 package com.harper.asteroids
 
-import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Distances
 import com.harper.asteroids.model.NearEarthObject
-import java.util.*
+import java.time.Instant
 
-class VicinityComparator : Comparator<NearEarthObject> {
+class VicinityComparator(
+    private val startDate: Instant,
+    private val endDate: Instant
+) : Comparator<NearEarthObject> {
+
     override fun compare(neo1: NearEarthObject, neo2: NearEarthObject): Int {
-        val neo1ClosestPass: Optional<Distances> = neo1.closeApproachData!!.stream()
-            .min(Comparator.comparing(CloseApproachData::missDistance))
-            .map { min -> min.missDistance }
-        val neo2ClosestPass: Optional<Distances> = neo2.closeApproachData!!.stream()
-            .min(Comparator.comparing(CloseApproachData::missDistance))
-            .map { min -> min.missDistance }
+        val neo1ClosestPass: Distances? = neo1.closeApproachData
+            ?.filter { it.closeApproachDateTime!!.toInstant() in startDate..endDate }
+            ?.minByOrNull { it.missDistance!! }
+            ?.let { it.missDistance!! }
 
-        return if (neo1ClosestPass.isPresent()) {
-            if (neo2ClosestPass.isPresent()) {
-                neo1ClosestPass.get().compareTo(neo2ClosestPass.get())
-            } else 1
-        } else -1
+        val neo2ClosestPass: Distances? = neo2.closeApproachData
+            ?.filter { it.closeApproachDateTime!!.toInstant() in startDate..endDate }
+            ?.minByOrNull { it.missDistance!! }
+            ?.let { it.missDistance!! }
+
+        if (neo1ClosestPass != null) {
+
+            if (neo2ClosestPass != null) {
+                return neo1ClosestPass.compareTo(neo2ClosestPass)
+            } else {
+                return 1
+            }
+        }
+        return -1
     }
 }

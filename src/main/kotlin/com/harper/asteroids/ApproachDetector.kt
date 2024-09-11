@@ -2,8 +2,8 @@ package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
 import java.io.IOException
-import java.util.function.Predicate
-import java.util.stream.Collectors
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.ws.rs.client.Client
 import javax.ws.rs.client.ClientBuilder
 import javax.ws.rs.core.MediaType
@@ -21,8 +21,8 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
      * Get the n closest approaches in this period
      * @param limit - n
      */
-    fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
-        val neos: MutableList<NearEarthObject> = ArrayList<NearEarthObject>(limit)
+    fun getClosestApproaches(limit: Int): List<NearEarthObject> {
+        val neos: MutableList<NearEarthObject> = ArrayList(limit)
         for (id in nearEarthObjectIds!!) {
             try {
                 println("Check passing of object $id")
@@ -55,15 +55,14 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
          * @param limit
          * @return
          */
-        fun getClosest(neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject>? {
-            //TODO: Should ignore the passes that are not today/this week.
-            return neos.stream()
-                .filter(Predicate<NearEarthObject> { neo: NearEarthObject ->
-                    neo.closeApproachData != null && !neo.closeApproachData.isEmpty()
-                })
-                .sorted(VicinityComparator())
-                .limit(limit.toLong())
-                .collect(Collectors.toList<NearEarthObject>())
+        fun getClosest(neos: List<NearEarthObject>, limit: Int): List<NearEarthObject> {
+            val startDate: Instant = Instant.now()
+            val endDate: Instant = startDate.plus(7, ChronoUnit.DAYS)
+
+            return neos
+                .filter { !it.closeApproachData.isNullOrEmpty() }
+                .sortedWith(VicinityComparator(startDate, endDate))
+                .take(limit)
         }
     }
 }
