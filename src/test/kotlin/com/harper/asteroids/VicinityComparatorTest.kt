@@ -17,9 +17,9 @@ class VicinityComparatorTest {
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        neo1 = mapper.readValue(javaClass.getResource("neo_example.json"), NearEarthObject::class.java)
+        neo1 = mapper.readValue(javaClass.getResource("/neo_example.json"), NearEarthObject::class.java)
         neo2 =
-            mapper.readValue<NearEarthObject>(javaClass.getResource("neo_example2.json"), NearEarthObject::class.java)
+            mapper.readValue<NearEarthObject>(javaClass.getResource("/neo_example2.json"), NearEarthObject::class.java)
     }
 
     @Test
