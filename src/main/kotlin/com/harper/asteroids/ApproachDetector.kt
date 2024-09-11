@@ -1,12 +1,14 @@
 package com.harper.asteroids
 
+import com.harper.asteroids.clients.NeoWsClient
 import com.harper.asteroids.model.NearEarthObject
-import java.io.IOException
+import io.ktor.client.call.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.MediaType
 
 /**
  * Receives a set of neo ids and rates them after earth proximity.
@@ -15,39 +17,31 @@ import javax.ws.rs.core.MediaType
  * Alerts if someone is possibly hazardous.
  */
 class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
-    private val client: Client = ClientBuilder.newClient()
+    private val httpClient = NeoWsClient()
 
     /**
      * Get the n closest approaches in this period
      * @param limit - n
      */
-    fun getClosestApproaches(limit: Int): List<NearEarthObject> {
-        val neos: MutableList<NearEarthObject> = ArrayList(limit)
-        for (id in nearEarthObjectIds!!) {
-            try {
-                println("Check passing of object $id")
-                val response = client
-                    .target(NEO_URL + id)
-                    .queryParam("api_key", App.API_KEY)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get()
+    suspend fun getClosestApproaches(limit: Int): List<NearEarthObject> {
+        val deferred: MutableList<Deferred<NearEarthObject>> = ArrayList()
 
-                val neo: NearEarthObject = JacksonMapper.instance.readValue(
-                    response.readEntity(String::class.java),
-                    NearEarthObject::class.java
-                )
-                neos.add(neo)
-            } catch (e: IOException) {
-                println("Failed scanning for asteroids: $e")
+        coroutineScope {
+            for (id in nearEarthObjectIds!!) {
+                println("Check passing of object $id")
+
+                val result: Deferred<NearEarthObject> = async { httpClient.getNeo(id.toString()).body() }
+                deferred.add(result)
             }
         }
+
+        val neos: List<NearEarthObject> = deferred.awaitAll()
         println("Received " + neos.size + " neos, now sorting")
 
         return getClosest(neos, limit)
     }
 
     companion object {
-        private const val NEO_URL = "https://api.nasa.gov/neo/rest/v1/neo/"
 
         /**
          * Get the closest passing.
