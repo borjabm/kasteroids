@@ -22,7 +22,7 @@ class NearEarthObject {
     val isPotentiallyHazardous: Boolean = false
 
     @JsonProperty("close_approach_data")
-    val closeApproachData: List<CloseApproachData>? = null
+    var closeApproachData: List<CloseApproachData>? = null
 
     @JsonProperty("is_sentry_object")
     val isSentryObject: Boolean = false

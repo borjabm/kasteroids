@@ -1,6 +1,7 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.clients.NeoWsClient
+import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.NearEarthObject
 import io.ktor.client.call.*
 import kotlinx.coroutines.Deferred
@@ -38,7 +39,8 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
         val neos: List<NearEarthObject> = deferred.awaitAll()
         println("Received " + neos.size + " neos, now sorting")
 
-        return getClosest(neos, limit)
+        val closest: List<NearEarthObject> = getClosest(neos, limit)
+        return closest
     }
 
     companion object {
@@ -54,9 +56,24 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
             val endDate: Instant = startDate.plus(7, ChronoUnit.DAYS)
 
             return neos
-                .filter { !it.closeApproachData.isNullOrEmpty() }
-                .sortedWith(VicinityComparator(startDate, endDate))
+                .map { neo ->
+                    neo.closeApproachData = getClosestInRange(startDate, endDate, neo.closeApproachData!!)
+                    neo
+                }
+                .filter { it.closeApproachData!!.isNotEmpty() }
+                .sortedWith(Comparator.nullsFirst(VicinityComparator(startDate, endDate)))
                 .take(limit)
+        }
+
+        private fun getClosestInRange(
+            startDate: Instant,
+            endDate: Instant,
+            closeApproachData: List<CloseApproachData>
+        ): List<CloseApproachData> {
+
+            return closeApproachData.filter {
+                it.closeApproachDateTime!!.toInstant() in startDate..endDate
+            }
         }
     }
 }
