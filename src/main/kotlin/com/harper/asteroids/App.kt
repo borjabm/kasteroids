@@ -3,8 +3,7 @@ package com.harper.asteroids
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.runBlocking
 import org.glassfish.jersey.client.ClientConfig
 import java.io.IOException
 import java.time.LocalDate
@@ -27,18 +26,15 @@ import javax.ws.rs.core.Response
 class App {
     private val client: Client
 
-    private val mapper: ObjectMapper = ObjectMapper()
-
     init {
         val configuration: ClientConfig = ClientConfig()
         client = ClientBuilder.newClient(configuration)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     /**
      * Scan space for asteroids close to earth
      */
-    private fun checkForAsteroids() {
+    private suspend fun checkForAsteroids() {
         val today = LocalDate.now()
         val response: Response = client
             .target(NEO_FEED_URL)
@@ -49,17 +45,16 @@ class App {
             .get()
         println("Got response: $response")
         if (response.getStatus() === Response.Status.OK.getStatusCode()) {
-            val mapper: ObjectMapper = ObjectMapper()
             val content: String = response.readEntity(String::class.java)
 
-
             try {
-                val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
+                val neoFeed: Feed = JacksonMapper.instance.readValue(content, Feed::class.java)
                 val approachDetector: ApproachDetector = ApproachDetector(neoFeed.allObjectIds)
 
-                val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
+                val closest: List<NearEarthObject>? = approachDetector.getClosestApproaches(10)
                 println("Hazard?   Distance(km)    When                             Name")
                 println("----------------------------------------------------------------------")
+
                 for (neo in closest!!) {
                     val closestPass: Optional<CloseApproachData> = neo.closeApproachData!!.stream()
                         .min(Comparator.comparing(CloseApproachData::missDistance))
@@ -91,7 +86,7 @@ class App {
         var API_KEY: String = "DEMO_KEY"
 
         @JvmStatic
-        fun main(args: Array<String>) {
+        fun main(args: Array<String>) = runBlocking {
             val apiKey = System.getenv("API_KEY")
             if (apiKey != null && !apiKey.isBlank()) {
                 API_KEY = apiKey
