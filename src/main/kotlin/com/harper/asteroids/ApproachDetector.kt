@@ -61,7 +61,7 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
                     neo
                 }
                 .filter { it.closeApproachData!!.isNotEmpty() }
-                .sortedWith(Comparator.nullsFirst(VicinityComparator(startDate, endDate)))
+                .sortedWith(VicinityComparator(startDate, endDate))
                 .take(limit)
         }
 
