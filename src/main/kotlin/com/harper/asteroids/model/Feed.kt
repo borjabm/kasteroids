@@ -1,19 +1,19 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.function.Function
 import java.util.stream.Collectors
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 
-/**
- * Response for a feed query of Neos.
- */
-@JsonIgnoreProperties(ignoreUnknown = true)
-class Feed() {
-    @JsonProperty("element_count")
-    val elementCount: Int = 0
+/** Response for a feed query of Neos. */
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+@JsonIgnoreUnknownKeys
+class Feed {
+    @SerialName("element_count") val elementCount: Int = 0
 
-    @JsonProperty("near_earth_objects")
+    @SerialName("near_earth_objects")
     private val nearEarthObjects: Map<String, List<NearEarthObjectIds?>>? = null
 
     fun getNearEarthObjects(): Map<String, List<NearEarthObjectIds?>>? {
@@ -21,8 +21,11 @@ class Feed() {
     }
 
     val allObjectIds: MutableList<Any>?
-        get() = nearEarthObjects!!.values.stream()
-            .flatMap<NearEarthObjectIds?>({ l: List<NearEarthObjectIds?> -> l.stream() })
-            .map<Any>(Function<NearEarthObjectIds?, Any> { n: NearEarthObjectIds? -> n!!.id })
-            .collect(Collectors.toList<Any>())
+        get() =
+            nearEarthObjects!!
+                .values
+                .stream()
+                .flatMap<NearEarthObjectIds?> { l: List<NearEarthObjectIds?> -> l.stream() }
+                .map { n: NearEarthObjectIds? -> n!!.id }
+                .collect(Collectors.toList())
 }

@@ -1,11 +1,11 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 class DiameterEstimation {
-    @JsonProperty("estimated_diameter_min")
-    private val min: Double? = null
+    @SerialName("estimated_diameter_min") private val min: Double? = null
 
-    @JsonProperty("estimated_diameter_max")
-    private val max: Double? = null
+    @SerialName("estimated_diameter_max") private val max: Double? = null
 }

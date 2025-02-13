@@ -3,68 +3,86 @@ package com.harper.asteroids
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.glassfish.jersey.client.ClientConfig
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import java.io.IOException
 import java.time.LocalDate
 import java.util.*
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonBuilder
 
 /**
  * Main app. Gets the list of closest asteroids from NASA at
- * https://api.nasa.gov/neo/rest/v1/feed?start_date=START_DATE&end_date=END_DATE&api_key=API_KEY
- * See documentation on the Asteroids - NeoWs API at https://api.nasa.gov/
+ * https://api.nasa.gov/neo/rest/v1/feed?start_date=START_DATE&end_date=END_DATE&api_key=API_KEY See
+ * documentation on the Asteroids - NeoWs API at https://api.nasa.gov/
  *
  * Prints the 10 closest
  *
- * Risk of getting throttled if we don't sign up for own key on https://api.nasa.gov/
- * Set environment variable 'API_KEY' to override.
+ * Risk of getting throttled if we don't sign up for own key on https://api.nasa.gov/ Set
+ * environment variable 'API_KEY' to override.
  */
 class App {
-    private val client: Client
-
-    private val mapper: ObjectMapper = ObjectMapper()
+    private val NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed"
+    private val httpClient: HttpClient
 
     init {
-        val configuration: ClientConfig = ClientConfig()
-        client = ClientBuilder.newClient(configuration)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        val apiKey: String? = System.getenv("API_KEY")
+
+        if (!apiKey.isNullOrEmpty()) {
+            API_KEY = apiKey
+        }
+        val json =
+            Json(
+                builderAction =
+                    fun JsonBuilder.() {
+                        explicitNulls = false
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                    })
+
+        httpClient = HttpClient(CIO.create()) { install(ContentNegotiation) { json(json = json) } }
     }
 
-    /**
-     * Scan space for asteroids close to earth
-     */
-    private fun checkForAsteroids() {
+    /** Scan space for asteroids close to earth */
+    suspend fun checkForAsteroids() {
         val today = LocalDate.now()
-        val response: Response = client
-            .target(NEO_FEED_URL)
-            .queryParam("start_date", today.toString())
-            .queryParam("end_date", today.toString())
-            .queryParam("api_key", API_KEY)
-            .request(MediaType.APPLICATION_JSON)
-            .get()
-        println("Got response: $response")
-        if (response.getStatus() === Response.Status.OK.getStatusCode()) {
-            val mapper: ObjectMapper = ObjectMapper()
-            val content: String = response.readEntity(String::class.java)
 
+        val respK: HttpResponse =
+            httpClient.get(NEO_FEED_URL) {
+                parameter("start_date", today.toString())
+                parameter("end_date", today.toString())
+                parameter("api_key", API_KEY)
+                contentType(ContentType.Application.Json)
+            }
+
+        if (respK.status == HttpStatusCode.OK) {
+            val json = Json {
+                explicitNulls = false
+                isLenient = true
+            }
+
+            val bodyAsText = respK.bodyAsText()
 
             try {
-                val neoFeed: Feed = mapper.readValue(content, Feed::class.java)
-                val approachDetector: ApproachDetector = ApproachDetector(neoFeed.allObjectIds)
+                val neoFeedK: Feed = json.decodeFromString<Feed>(bodyAsText)
+                val approachDetector = ApproachDetector(neoFeedK.allObjectIds)
 
-                val closest: MutableList<NearEarthObject>? = approachDetector.getClosestApproaches(10)
+                val closest: MutableList<NearEarthObject>? =
+                    approachDetector.getClosestApproaches(10)
                 println("Hazard?   Distance(km)    When                             Name")
                 println("----------------------------------------------------------------------")
                 for (neo in closest!!) {
-                    val closestPass: Optional<CloseApproachData> = neo.closeApproachData!!.stream()
-                        .min(Comparator.comparing(CloseApproachData::missDistance))
+                    val closestPass: Optional<CloseApproachData> =
+                        neo.closeApproachData!!
+                            .stream()
+                            .min(Comparator.comparing(CloseApproachData::missDistance))
 
-                    if (closestPass.isEmpty()) continue
+                    if (closestPass.isEmpty) continue
 
                     println(
                         java.lang.String.format(
@@ -72,31 +90,21 @@ class App {
                             (if (neo.isPotentiallyHazardous) "!!!" else " - "),
                             closestPass.get().missDistance!!.kilometers,
                             closestPass.get().closeApproachDateTime,
-                            neo.name
-                        )
-                    )
+                            neo.name))
                 }
             } catch (e: IOException) {
                 println("Failed scanning for asteroids: $e")
             }
         } else {
-            println(("Failed querying feed, got " + response.getStatus()).toString() + " " + response.getStatusInfo())
+            println(("Failed querying feed, got " + respK.status.value) + " " + respK.status)
         }
     }
-
 
     companion object {
-        private const val NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed"
-
         var API_KEY: String = "DEMO_KEY"
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val apiKey = System.getenv("API_KEY")
-            if (apiKey != null && !apiKey.isBlank()) {
-                API_KEY = apiKey
-            }
-            App().checkForAsteroids()
-        }
     }
+}
+
+suspend fun main() {
+    App().checkForAsteroids()
 }

@@ -1,13 +1,15 @@
 package com.harper.asteroids.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+@JsonIgnoreUnknownKeys
 class NearEarthObjectIds {
-    @JsonProperty("id")
-    val id: String? = null
+    @SerialName("id") val id: String? = null
 
-    @JsonProperty("name")
-    val name: String? = null
+    @SerialName("name") val name: String? = null
 }

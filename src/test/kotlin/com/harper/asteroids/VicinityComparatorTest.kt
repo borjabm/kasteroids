@@ -1,25 +1,36 @@
 package com.harper.asteroids
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.harper.asteroids.model.NearEarthObject
+import java.io.IOException
+import kotlinx.serialization.json.Json
 import org.hamcrest.Matchers
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 
 class VicinityComparatorTest {
 
-    private val mapper = ObjectMapper()
+    private val json = Json { ignoreUnknownKeys = true }
     private var neo1: NearEarthObject? = null
-    private var neo2:NearEarthObject? = null
+    private var neo2: NearEarthObject? = null
 
     @Before
     @Throws(IOException::class)
     fun setUp() {
-        neo1 = mapper.readValue(javaClass.getResource("neo_example.json"), NearEarthObject::class.java)
+        neo1 =
+            json.decodeFromString<NearEarthObject>(
+                object {}::class
+                    .java
+                    .classLoader
+                    .getResource("neo_example.json")
+                    .readText(Charsets.UTF_8))
         neo2 =
-            mapper.readValue<NearEarthObject>(javaClass.getResource("neo_example2.json"), NearEarthObject::class.java)
+            json.decodeFromString<NearEarthObject>(
+                object {}::class
+                    .java
+                    .classLoader
+                    .getResource("neo_example2.json")
+                    .readText(Charsets.UTF_8))
     }
 
     @Test

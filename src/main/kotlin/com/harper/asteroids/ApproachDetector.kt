@@ -1,43 +1,50 @@
 package com.harper.asteroids
 
+import com.harper.asteroids.App.Companion.API_KEY
 import com.harper.asteroids.model.NearEarthObject
-import com.fasterxml.jackson.databind.ObjectMapper
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import java.io.IOException
-import java.util.function.Predicate
 import java.util.stream.Collectors
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.MediaType
+import kotlinx.serialization.json.Json
 
 /**
- * Receives a set of neo ids and rates them after earth proximity.
- * Retrieves the approach data for them and sorts to the n closest.
- * https://api.nasa.gov/neo/rest/v1/neo/
- * Alerts if someone is possibly hazardous.
+ * Receives a set of neo ids and rates them after earth proximity. Retrieves the approach data for
+ * them and sorts to the n closest. https://api.nasa.gov/neo/rest/v1/neo/ Alerts if someone is
+ * possibly hazardous.
  */
 class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
-    private val client: Client = ClientBuilder.newClient()
-    private val mapper = ObjectMapper()
+    private val json = Json {
+        explicitNulls = false
+        isLenient = true
+    }
+
+    private val httpClient: HttpClient =
+        HttpClient(CIO.create()) { install(ContentNegotiation) { json(json = json) } }
 
     /**
      * Get the n closest approaches in this period
+     *
      * @param limit - n
      */
-    fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
+    suspend fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
         val neos: MutableList<NearEarthObject> = ArrayList<NearEarthObject>(limit)
         for (id in nearEarthObjectIds!!) {
             try {
                 println("Check passing of object $id")
-                val response = client
-                    .target(NEO_URL + id)
-                    .queryParam("api_key", App.API_KEY)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get()
+                val respK: HttpResponse =
+                    httpClient.get(NEO_URL + id) {
+                        parameter("api_key", API_KEY)
+                        contentType(ContentType.Application.Json)
+                    }
 
-                val neo: NearEarthObject = mapper.readValue(
-                    response.readEntity(String::class.java),
-                    NearEarthObject::class.java
-                )
+                val neo: NearEarthObject =
+                    json.decodeFromString<NearEarthObject>(respK.bodyAsText())
                 neos.add(neo)
             } catch (e: IOException) {
                 println("Failed scanning for asteroids: $e")
@@ -53,19 +60,19 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
 
         /**
          * Get the closest passing.
+         *
          * @param neos the NearEarthObjects
          * @param limit
          * @return
          */
         fun getClosest(neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject>? {
-            //TODO: Should ignore the passes that are not today/this week.
-            return neos.stream()
-                .filter(Predicate<NearEarthObject> { neo: NearEarthObject ->
-                    neo.closeApproachData != null && !neo.closeApproachData.isEmpty()
-                })
+            // TODO: Should ignore the passes that are not today/this week.
+            return neos
+                .stream()
+                .filter { neo: NearEarthObject -> !neo.closeApproachData.isNullOrEmpty() }
                 .sorted(VicinityComparator())
                 .limit(limit.toLong())
-                .collect(Collectors.toList<NearEarthObject>())
+                .collect(Collectors.toList())
         }
     }
 }

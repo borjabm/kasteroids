@@ -7,12 +7,16 @@ import java.util.*
 
 class VicinityComparator : Comparator<NearEarthObject> {
     override fun compare(neo1: NearEarthObject, neo2: NearEarthObject): Int {
-        val neo1ClosestPass: Optional<Distances> = neo1.closeApproachData!!.stream()
-            .min(Comparator.comparing(CloseApproachData::missDistance))
-            .map { min -> min.missDistance }
-        val neo2ClosestPass: Optional<Distances> = neo2.closeApproachData!!.stream()
-            .min(Comparator.comparing(CloseApproachData::missDistance))
-            .map { min -> min.missDistance }
+        val neo1ClosestPass: Optional<Distances> =
+            neo1.closeApproachData!!
+                .stream()
+                .min(Comparator.comparing(CloseApproachData::missDistance))
+                .map { min -> min.missDistance }
+        val neo2ClosestPass: Optional<Distances> =
+            neo2.closeApproachData!!
+                .stream()
+                .min(Comparator.comparing(CloseApproachData::missDistance))
+                .map { min -> min.missDistance }
 
         return if (neo1ClosestPass.isPresent()) {
             if (neo2ClosestPass.isPresent()) {
