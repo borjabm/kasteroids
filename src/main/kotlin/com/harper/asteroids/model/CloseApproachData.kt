@@ -35,7 +35,7 @@ class CloseApproachData {
 }
 
 object DateSerializer : KSerializer<Date> {
-    private val formatter = SimpleDateFormat("yyyy-MMM-dd hh:mm")
+    private val formatter = SimpleDateFormat("yyyy-MMM-dd hh:mm", Locale.ENGLISH)
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
@@ -51,7 +51,7 @@ object DateSerializer : KSerializer<Date> {
 }
 
 object SimpleDateSerializer : KSerializer<Date> {
-    private val formatter = SimpleDateFormat("yyyy-MM-dd")
+    private val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
