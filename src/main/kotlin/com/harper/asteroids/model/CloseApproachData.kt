@@ -1,7 +1,5 @@
 package com.harper.asteroids.model
 
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -12,6 +10,8 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable

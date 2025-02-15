@@ -8,8 +8,7 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonIgnoreUnknownKeys
-class NearEarthObjectIds {
-    @SerialName("id") val id: String? = null
-
+data class NearEarthObjectIds(
+    @SerialName("id") val id: String? = null,
     @SerialName("name") val name: String? = null
-}
+)
