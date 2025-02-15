@@ -5,6 +5,8 @@ import com.harper.asteroids.model.NearEarthObject
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -27,14 +29,18 @@ class NasaApiClient(
         }.body()
     }
     
-    fun lookupById(asteroidId: Int): NearEarthObject = runBlocking {
+    fun lookupByIds(asteroidIds: List<Int>): List<NearEarthObject> = runBlocking {
+        asteroidIds
+            .map { asteroidId ->
+                async { lookupById(asteroidId) } }
+            .toList()
+            .awaitAll()
+    }
+    
+    private suspend fun lookupById(asteroidId: Int): NearEarthObject {
         log.info("Check passing of object $asteroidId")
-        httpClient.get("$NEO_LOOKUP_URL/$asteroidId") {
+        return httpClient.get("$NEO_LOOKUP_URL/$asteroidId") {
             parameter("api_key", apiKey)
         }.body()
     }
-    
-    fun lookupByIds(asteroidIds: List<Int>): List<NearEarthObject> =
-        asteroidIds.map { id -> lookupById(id) }.toList()
-    
 }

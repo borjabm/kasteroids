@@ -28,7 +28,7 @@ class App(private val nasaApiClient: NasaApiClient = NasaApiClient()) {
         val closest: List<NearEarthObject> = approachDetector.getClosestApproaches(10)
         println("Hazard?   Distance(km)    When                             Name")
         println("----------------------------------------------------------------------")
-        for (neo in closest!!) {
+        for (neo in closest) {
             val closestPass: Optional<CloseApproachData> =
                 neo.closeApproachData!!
                     .stream()

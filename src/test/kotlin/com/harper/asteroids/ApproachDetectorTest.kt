@@ -18,7 +18,7 @@ class ApproachDetectorTest {
     }
 
     @Test
-    fun testFiltering(): Unit {
+    fun testFiltering() {
         val neos = listOf(neo1, neo2)
         val filtered = ApproachDetector.getClosest(neos, 1)
         // Neo2 has the closest passing at 5261628 kms away.
