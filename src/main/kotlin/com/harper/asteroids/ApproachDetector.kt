@@ -2,7 +2,9 @@ package com.harper.asteroids
 
 import com.harper.asteroids.client.NasaApiClient
 import com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.util.DateUtils
 import org.slf4j.LoggerFactory
+import java.time.*
 import java.util.stream.Collectors
 
 /**
@@ -34,9 +36,17 @@ class ApproachDetector(private val nearEarthObjectIds: List<Int>, private val na
          */
         fun getClosest(neos: List<NearEarthObject>, limit: Int): List<NearEarthObject> {
             // TODO: Should ignore the passes that are not today/this week.
+            // Done.
+            val (currentWeekStart, currentWeekEnd) = DateUtils.weekBoundaries(Instant.now())
             return neos
                 .stream()
-                .filter { neo: NearEarthObject -> !neo.closeApproachData.isNullOrEmpty() }
+                .filter { neo: NearEarthObject -> neo.closeApproachData
+                    .mapNotNull { approachDate ->
+                        approachDate.closeApproachDate?.toInstant()?.let {
+                            LocalDate.ofInstant(it, ZoneId.systemDefault()).atTime(LocalTime.NOON) }
+                    }
+                    .all { approachDate -> approachDate.isAfter(currentWeekStart) && approachDate.isBefore(currentWeekEnd) }
+                }
                 .sorted(VicinityComparator())
                 .limit(limit.toLong())
                 .collect(Collectors.toList())

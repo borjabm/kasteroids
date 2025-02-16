@@ -1,11 +1,9 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.client.NasaApiClient
-import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
 import java.time.LocalDate
-import java.util.*
 
 /**
  * Main app. Gets the list of closest asteroids from NASA at
@@ -28,23 +26,21 @@ class App(private val nasaApiClient: NasaApiClient = NasaApiClient()) {
         val closest: List<NearEarthObject> = approachDetector.getClosestApproaches(10)
         println("Hazard?   Distance(km)    When                             Name")
         println("----------------------------------------------------------------------")
-        for (neo in closest) {
-            val closestPass: Optional<CloseApproachData> =
-                neo.closeApproachData!!
-                    .stream()
-                    .min(Comparator.comparing(CloseApproachData::missDistance))
-            
-            if (closestPass.isEmpty) continue
-            
-            println(
-                java.lang.String.format(
-                    "%s       %12.3f  %s    %s",
-                    (if (neo.isPotentiallyHazardous) "!!!" else " - "),
-                    closestPass.get().missDistance!!.kilometers,
-                    closestPass.get().closeApproachDateTime,
-                    neo.name
-                )
-            )
+        
+        closest.forEach { neo ->
+            neo.closeApproachData
+                .filter { it.missDistance?.kilometers != null }
+                .minByOrNull { it.missDistance?.kilometers ?: 0.0 }?.let { closestPass ->
+                    println(
+                        String.format(
+                            "%s       %12.3f  %s    %s",
+                            (if (neo.isPotentiallyHazardous) "!!!" else " - "),
+                            closestPass.missDistance!!.kilometers,
+                            closestPass.closeApproachDateTime,
+                            neo.name
+                        )
+                    )
+                }
         }
     }
 }
