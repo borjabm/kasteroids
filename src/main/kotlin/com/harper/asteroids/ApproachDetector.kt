@@ -4,7 +4,10 @@ import com.harper.asteroids.client.NasaApiClient
 import com.harper.asteroids.model.NearEarthObject
 import com.harper.asteroids.util.DateUtils
 import org.slf4j.LoggerFactory
-import java.time.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.util.stream.Collectors
 
 /**
@@ -12,7 +15,10 @@ import java.util.stream.Collectors
  * them and sorts to the n closest. https://api.nasa.gov/neo/rest/v1/neo/ Alerts if someone is
  * possibly hazardous.
  */
-class ApproachDetector(private val nearEarthObjectIds: List<Int>, private val nasaApiClient: NasaApiClient = NasaApiClient()) {
+class ApproachDetector(
+    private val nearEarthObjectIds: List<Int>,
+    private val nasaApiClient: NasaApiClient = NasaApiClient()
+) {
     private val log = LoggerFactory.getLogger(javaClass)
     
     /**
@@ -35,17 +41,21 @@ class ApproachDetector(private val nearEarthObjectIds: List<Int>, private val na
          * @return
          */
         fun getClosest(neos: List<NearEarthObject>, limit: Int): List<NearEarthObject> {
-            // TODO: Should ignore the passes that are not today/this week.
-            // Done.
             val (currentWeekStart, currentWeekEnd) = DateUtils.weekBoundaries(Instant.now())
             return neos
                 .stream()
-                .filter { neo: NearEarthObject -> neo.closeApproachData
-                    .mapNotNull { approachDate ->
-                        approachDate.closeApproachDate?.toInstant()?.let {
-                            LocalDate.ofInstant(it, ZoneId.systemDefault()).atTime(LocalTime.NOON) }
-                    }
-                    .all { approachDate -> approachDate.isAfter(currentWeekStart) && approachDate.isBefore(currentWeekEnd) }
+                .filter { neo: NearEarthObject ->
+                    neo.closeApproachData
+                        .mapNotNull { approachDate ->
+                            approachDate.closeApproachDate?.toInstant()?.let {
+                                LocalDate.ofInstant(it, ZoneId.systemDefault()).atTime(LocalTime.NOON)
+                            }
+                        }
+                        .all { approachDate ->
+                            approachDate.isAfter(currentWeekStart) && approachDate.isBefore(
+                                currentWeekEnd
+                            )
+                        }
                 }
                 .sorted(VicinityComparator())
                 .limit(limit.toLong())

@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Definition for Neo - Near Earth Object
  */
 @Serializable
-data class NearEarthObject (
+data class NearEarthObject(
     @SerialName("id") val id: String? = null,
     @SerialName("name") val name: String? = null,
     @SerialName("nasa_jpl_url") val nplUrl: String? = null,

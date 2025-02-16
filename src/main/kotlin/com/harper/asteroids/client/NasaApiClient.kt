@@ -33,7 +33,7 @@ class NasaApiClient(
     fun lookupByIds(asteroidIds: List<Int>): List<NearEarthObject> = runBlocking {
         log.info("Looking up ${asteroidIds.size} asteroids in concurrent chunks of size $concurrentRequestsCount")
         asteroidIds.chunked(concurrentRequestsCount)
-            .mapIndexed{ idx, asteroidIdsChunk ->
+            .mapIndexed { idx, asteroidIdsChunk ->
                 log.info("Fetching chunk $idx for ids: $asteroidIdsChunk")
                 asteroidIdsChunk
                     .map { asteroidId -> async { lookupById(asteroidId) } }
