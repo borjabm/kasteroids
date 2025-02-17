@@ -1,8 +1,5 @@
 ## Existing code review & improvements made
 
-In general there are a lot of issues with the existing codebase and I needed to 
-find a balance
-
 - Application issued a warning that no logger implementation is available, 
 because SLF4J is just an interface. I added `logback` dependency to mitigate it.
 Moreover, there is no logger configured and all output goes to stdout, however,
