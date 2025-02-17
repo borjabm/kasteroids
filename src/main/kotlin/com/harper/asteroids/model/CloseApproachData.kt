@@ -1,8 +1,5 @@
 package com.harper.asteroids.model
 
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -11,57 +8,36 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.*
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-@JsonIgnoreUnknownKeys
 class CloseApproachData {
-    @SerialName("close_approach_date")
-    @Serializable(with = SimpleDateSerializer::class)
-    val closeApproachDate: Date? = null
 
     @SerialName("close_approach_date_full")
-    @Serializable(with = DateSerializer::class)
-    val closeApproachDateTime: Date? = null
-
-    @SerialName("epoch_date_close_approach") val closeApproachEpochDate: Long = 0
-
-    @SerialName("relative_velocity") val relativeVelocity: Velocities? = null
+    @Serializable(with = InstantSerializer::class)
+    val closeApproachDateTime: Instant? = null
 
     @SerialName("miss_distance") val missDistance: Distances? = null
-
-    @SerialName("orbiting_body") val orbitingBody: String? = null
 }
 
-object DateSerializer : KSerializer<Date> {
-    private val formatter = SimpleDateFormat("yyyy-MMM-dd hh:mm", Locale.ENGLISH)
+object InstantSerializer : KSerializer<Instant> {
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm", Locale.ENGLISH)
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: Date) {
-        encoder.encodeString(formatter.format(value))
+    override fun serialize(encoder: Encoder, value: Instant) {
+        val formatted = formatter.format(value.atZone(ZoneOffset.UTC).toLocalDateTime())
+        encoder.encodeString(formatted)
     }
 
-    override fun deserialize(decoder: Decoder): Date {
+    override fun deserialize(decoder: Decoder): Instant {
         val string = decoder.decodeString()
-        return formatter.parse(string)
-    }
-}
-
-object SimpleDateSerializer : KSerializer<Date> {
-    private val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Date) {
-        encoder.encodeString(formatter.format(value))
-    }
-
-    override fun deserialize(decoder: Decoder): Date {
-        val string = decoder.decodeString()
-        return formatter.parse(string)
+        val localDateTime = LocalDateTime.parse(string, formatter)
+        return localDateTime.atZone(ZoneOffset.UTC).toInstant()
     }
 }
