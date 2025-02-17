@@ -32,11 +32,20 @@ class VicinityComparatorTest {
     }
 
     @Test
-    fun testOrder() {
+    fun `should correctly compare neos by distance when both approach earth in specified week`() {
         val comparator = VicinityComparator(LocalDate.of(2020, 1, 1))
 
         Assert.assertThat(comparator.compare(neo1, neo2), Matchers.lessThan(0))
         Assert.assertThat(comparator.compare(neo2, neo1), Matchers.greaterThan(0))
+        Assert.assertEquals(comparator.compare(neo1, neo1).toLong(), 0)
+    }
+
+    @Test
+    fun `should correctly compare neos when only one of them approaches earth in specified week`() {
+        val comparator = VicinityComparator(LocalDate.of(2028, 12, 23))
+
+        Assert.assertThat(comparator.compare(neo1, neo2), Matchers.greaterThan(0))
+        Assert.assertThat(comparator.compare(neo2, neo1), Matchers.lessThan(0))
         Assert.assertEquals(comparator.compare(neo1, neo1).toLong(), 0)
     }
 }
