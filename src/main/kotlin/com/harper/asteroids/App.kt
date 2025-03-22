@@ -3,6 +3,7 @@ package com.harper.asteroids
 import com.harper.asteroids.model.CloseApproachData
 import com.harper.asteroids.model.Feed
 import com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.utils.jsonParser
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -13,8 +14,6 @@ import io.ktor.serialization.kotlinx.json.*
 import java.io.IOException
 import java.time.LocalDate
 import java.util.*
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonBuilder
 
 /**
  * Main app. Gets the list of closest asteroids from NASA at
@@ -36,16 +35,8 @@ class App {
         if (!apiKey.isNullOrEmpty()) {
             API_KEY = apiKey
         }
-        val json =
-            Json(
-                builderAction =
-                    fun JsonBuilder.() {
-                        explicitNulls = false
-                        ignoreUnknownKeys = true
-                        isLenient = true
-                    })
 
-        httpClient = HttpClient(CIO.create()) { install(ContentNegotiation) { json(json = json) } }
+        httpClient = HttpClient(CIO.create()) { install(ContentNegotiation) { json(json = jsonParser) } }
     }
 
     /** Scan space for asteroids close to earth */
@@ -61,15 +52,11 @@ class App {
             }
 
         if (respK.status == HttpStatusCode.OK) {
-            val json = Json {
-                explicitNulls = false
-                isLenient = true
-            }
 
             val bodyAsText = respK.bodyAsText()
 
             try {
-                val neoFeedK: Feed = json.decodeFromString<Feed>(bodyAsText)
+                val neoFeedK: Feed = jsonParser.decodeFromString<Feed>(bodyAsText)
                 val approachDetector = ApproachDetector(neoFeedK.allObjectIds)
 
                 val closest: MutableList<NearEarthObject>? =
@@ -90,7 +77,9 @@ class App {
                             (if (neo.isPotentiallyHazardous) "!!!" else " - "),
                             closestPass.get().missDistance!!.kilometers,
                             closestPass.get().closeApproachDateTime,
-                            neo.name))
+                            neo.name
+                        )
+                    )
                 }
             } catch (e: IOException) {
                 println("Failed scanning for asteroids: $e")

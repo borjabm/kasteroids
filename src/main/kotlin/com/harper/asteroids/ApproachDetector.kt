@@ -2,6 +2,7 @@ package com.harper.asteroids
 
 import com.harper.asteroids.App.Companion.API_KEY
 import com.harper.asteroids.model.NearEarthObject
+import com.harper.asteroids.utils.jsonParser
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -11,7 +12,6 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import java.io.IOException
 import java.util.stream.Collectors
-import kotlinx.serialization.json.Json
 
 /**
  * Receives a set of neo ids and rates them after earth proximity. Retrieves the approach data for
@@ -19,13 +19,9 @@ import kotlinx.serialization.json.Json
  * possibly hazardous.
  */
 class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
-    private val json = Json {
-        explicitNulls = false
-        isLenient = true
-    }
 
     private val httpClient: HttpClient =
-        HttpClient(CIO.create()) { install(ContentNegotiation) { json(json = json) } }
+        HttpClient(CIO.create()) { install(ContentNegotiation) { json(json = jsonParser) } }
 
     /**
      * Get the n closest approaches in this period
@@ -44,7 +40,7 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
                     }
 
                 val neo: NearEarthObject =
-                    json.decodeFromString<NearEarthObject>(respK.bodyAsText())
+                    jsonParser.decodeFromString<NearEarthObject>(respK.bodyAsText())
                 neos.add(neo)
             } catch (e: IOException) {
                 println("Failed scanning for asteroids: $e")

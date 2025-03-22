@@ -5,7 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class DiameterEstimation {
-    @SerialName("estimated_diameter_min") private val min: Double? = null
+    @SerialName("estimated_diameter_min")
+    private val min: Double? = null
 
-    @SerialName("estimated_diameter_max") private val max: Double? = null
+    @SerialName("estimated_diameter_max")
+    private val max: Double? = null
 }

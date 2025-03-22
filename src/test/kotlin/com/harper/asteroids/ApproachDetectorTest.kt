@@ -1,14 +1,13 @@
 package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
-import java.io.IOException
-import kotlinx.serialization.json.Json
+import com.harper.asteroids.utils.jsonParser
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 class ApproachDetectorTest {
-    private val json = Json { ignoreUnknownKeys = true }
     private var neo1: NearEarthObject? = null
     private var neo2: NearEarthObject? = null
 
@@ -16,19 +15,21 @@ class ApproachDetectorTest {
     @Throws(IOException::class)
     fun setUp() {
         neo1 =
-            json.decodeFromString<NearEarthObject>(
+            jsonParser.decodeFromString<NearEarthObject>(
                 object {}::class
                     .java
                     .classLoader
                     .getResource("neo_example.json")
-                    .readText(Charsets.UTF_8))
+                    .readText(Charsets.UTF_8)
+            )
         neo2 =
-            json.decodeFromString<NearEarthObject>(
+            jsonParser.decodeFromString<NearEarthObject>(
                 object {}::class
                     .java
                     .classLoader
                     .getResource("neo_example2.json")
-                    .readText(Charsets.UTF_8))
+                    .readText(Charsets.UTF_8)
+            )
     }
 
     @Test
