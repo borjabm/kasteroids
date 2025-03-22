@@ -10,6 +10,11 @@ version = "1.0-SNAPSHOT"
 
 application { mainClass.set("com.harper.asteroids.AppKt") }
 
+tasks.test {
+    // https://github.com/mockk/mockk/issues/681
+    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
+}
+
 repositories { mavenCentral() }
 
 dependencies {
@@ -23,6 +28,7 @@ dependencies {
     // Use JUnit test framework
     testImplementation("junit:junit:4.12")
     testImplementation("org.hamcrest:hamcrest-library:1.3")
+    testImplementation("io.mockk:mockk:1.13.17")
 }
 
 kotlin { jvmToolchain(17) }

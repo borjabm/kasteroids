@@ -2,10 +2,16 @@ package com.harper.asteroids
 
 import com.harper.asteroids.model.NearEarthObject
 import com.harper.asteroids.utils.jsonParser
-import org.junit.Assert
+import io.mockk.clearAllMocks
+import io.mockk.clearStaticMockk
+import io.mockk.every
+import io.mockk.mockkStatic
+import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
+import java.time.LocalDate
 
 class ApproachDetectorTest {
     private var neo1: NearEarthObject? = null
@@ -32,14 +38,19 @@ class ApproachDetectorTest {
             )
     }
 
+    @After
+    fun tearDown() {
+        clearAllMocks()
+    }
+
     @Test
     fun testFiltering() {
-        val neos: MutableList<NearEarthObject> = java.util.List.of(neo1, neo2)
-        val filtered: MutableList<NearEarthObject>? = ApproachDetector.getClosest(neos, 1)
-        // Neo2 has the closest passing at 5261628 kms away.
-        // TODO: Neo2's closest passing is in 2028.
-        // In Jan 202, neo1 is closer (5390966 km, vs neo2's at 7644137 km)
-        Assert.assertEquals(1, filtered!!.size.toLong())
-        Assert.assertEquals(neo2, filtered[0])
+        mockkStatic(LocalDate::class)
+        every { LocalDate.now() } returns LocalDate.of(2020, 1, 1)
+        val neos = listOf(neo1!!, neo2!!)
+        val filtered = ApproachDetector.getClosest(neos, 1)
+        // In Jan 2020, neo1 is closer (5390966 km, vs neo2's at 7644137 km)
+        assertEquals(1, filtered.size.toLong())
+        assertEquals(neo1, filtered[0])
     }
 }

@@ -59,11 +59,11 @@ class App {
                 val neoFeedK: Feed = jsonParser.decodeFromString<Feed>(bodyAsText)
                 val approachDetector = ApproachDetector(neoFeedK.allObjectIds)
 
-                val closest: MutableList<NearEarthObject>? =
+                val closest: MutableList<NearEarthObject> =
                     approachDetector.getClosestApproaches(10)
                 println("Hazard?   Distance(km)    When                             Name")
                 println("----------------------------------------------------------------------")
-                for (neo in closest!!) {
+                for (neo in closest) {
                     val closestPass: Optional<CloseApproachData> =
                         neo.closeApproachData!!
                             .stream()

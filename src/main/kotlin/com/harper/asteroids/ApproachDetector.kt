@@ -11,7 +11,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import java.io.IOException
-import java.util.stream.Collectors
 
 /**
  * Receives a set of neo ids and rates them after earth proximity. Retrieves the approach data for
@@ -28,7 +27,7 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
      *
      * @param limit - n
      */
-    suspend fun getClosestApproaches(limit: Int): MutableList<NearEarthObject>? {
+    suspend fun getClosestApproaches(limit: Int): MutableList<NearEarthObject> {
         val neos: MutableList<NearEarthObject> = ArrayList<NearEarthObject>(limit)
         for (id in nearEarthObjectIds!!) {
             try {
@@ -61,14 +60,14 @@ class ApproachDetector(private val nearEarthObjectIds: MutableList<Any>?) {
          * @param limit
          * @return
          */
-        fun getClosest(neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject>? {
+        fun getClosest(neos: List<NearEarthObject>, limit: Int): MutableList<NearEarthObject> {
             // TODO: Should ignore the passes that are not today/this week.
-            return neos
-                .stream()
-                .filter { neo: NearEarthObject -> !neo.closeApproachData.isNullOrEmpty() }
-                .sorted(VicinityComparator())
-                .limit(limit.toLong())
-                .collect(Collectors.toList())
+            return neos.asSequence()
+                .map { it.copy(closeApproachData = it.getCloseApproachDataWithinNextWeek()) }
+                .filterNot { it.closeApproachData.isNullOrEmpty() }
+                .sortedWith(VicinityComparator())
+                .take(limit)
+                .toMutableList()
         }
     }
 }
